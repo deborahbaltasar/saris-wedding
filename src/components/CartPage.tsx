@@ -7,7 +7,7 @@ import { Label } from './ui/label';
 import { RadioGroup, RadioGroupItem } from './ui/radio-group';
 import { useCart } from './CartContext';
 import { PixPaymentModal } from './PixPaymentModal';
-import { createPixPayment, validatePaymentForm } from '../lib/payments';
+import { createPixPayment, validatePaymentForm } from '../lib/payment';
 
 interface CartPageProps {
   isOpen: boolean;
@@ -22,6 +22,7 @@ export function CartPage({ isOpen, onClose }: CartPageProps) {
     name: '',
     email: '',
     phone: '',
+    taxId: '',
     cardNumber: '',
     expiryDate: '',
     cvv: '',
@@ -43,41 +44,45 @@ export function CartPage({ isOpen, onClose }: CartPageProps) {
       return;
     }
 
-    // Validate form data for PIX payment
-    // const validation = validatePaymentForm(formData, paymentMethod);
-    // if (!validation.isValid) {
-    //   setFormErrors(validation.errors);
-    //   return;
-    // }
+    const validation = validatePaymentForm(
+      { name: formData.name, email: formData.email, phone: formData.phone, taxId: formData.taxId },
+      'pix'
+    )
+    if (!validation.isValid) {
+      setFormErrors(validation.errors as any)
+      return
+    }
 
-    // setIsProcessing(true);
-    // setFormErrors({});
+    setIsProcessing(true)
+    setFormErrors({})
 
-    // try {
-    //   const orderItems = cartItems.map(item => ({
-    //     id: item.id,
-    //     name: item.name,
-    //     price: item.price,
-    //     quantity: item.quantity,
-    //     store: item.store,
-    //   }));
+    try {
+      const orderItems = cartItems.map(item => ({
+        id: item.id,
+        name: item.name,
+        price: item.price,
+        quantity: item.quantity,
+        store: item.store,
+      }))
 
-    //   // Create PIX payment
-    //   const pixData = await createPixPayment(totalPrice, {
-    //     name: formData.name,
-    //     email: formData.email,
-    //     phone: formData.phone,
-    //   }, orderItems);
+      const pixData = await createPixPayment(
+        totalPrice,
+        {
+          name: formData.name,
+          email: formData.email,
+          phone: formData.phone,  // vira "cellphone" no helper
+          taxId: formData.taxId
+        },
+      )
 
-    //   setPixPaymentData(pixData);
-    //   setIsPixModalOpen(true);
-    // } catch (error) {
-    //   console.error('Payment error:', error);
-    //   alert('Payment failed. Please try again.');
-    // } finally {
-    //   setIsProcessing(false);
-    // }
-    handlePixPaymentConfirmed();
+      setPixPaymentData(pixData)
+      setIsPixModalOpen(true)
+    } catch (error) {
+      console.error('Payment error:', error)
+      alert('Payment failed. Please try again.')
+    } finally {
+      setIsProcessing(false)
+    }
   };
 
   const handlePixPaymentConfirmed = () => {
@@ -99,6 +104,7 @@ export function CartPage({ isOpen, onClose }: CartPageProps) {
     <AnimatePresence>
       {isOpen && (
         <motion.div
+          key="cart-drawer"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
@@ -199,7 +205,7 @@ export function CartPage({ isOpen, onClose }: CartPageProps) {
                           </span>
                           <span className="text-2xl font-semibold text-sage-dark">R${totalPrice}</span>
                         </div>
-                        
+
                         <div className="flex space-x-3">
                           <Button
                             onClick={clearCart}
@@ -333,6 +339,22 @@ export function CartPage({ isOpen, onClose }: CartPageProps) {
                           </p>
                         )}
                       </div>
+                      <div>
+                        <Label htmlFor="taxId">CPF *</Label>
+                        <Input
+                          id="taxId"
+                          value={formData.taxId}
+                          onChange={(e) => handleInputChange('taxId', e.target.value)}
+                          placeholder="Enter your CPF"
+                          className={`mt-1 ${formErrors.taxId ? 'border-destructive' : ''}`}
+                        />
+                        {formErrors.taxId && (
+                          <p className="text-sm text-destructive mt-1 flex items-center">
+                            <AlertCircle className="h-4 w-4 mr-1" />
+                            {formErrors.taxId}
+                          </p>
+                        )}
+                      </div>
                     </div>
                   </div>
 
@@ -399,6 +421,7 @@ export function CartPage({ isOpen, onClose }: CartPageProps) {
 
                   {(paymentMethod === 'debit' || paymentMethod === 'credit') && (
                     <motion.div
+                      key="debit-cart"
                       initial={{ opacity: 0, height: 0 }}
                       animate={{ opacity: 1, height: 'auto' }}
                       className="bg-sage-light/10 rounded-xl p-4"
@@ -439,6 +462,7 @@ export function CartPage({ isOpen, onClose }: CartPageProps) {
             {currentView === 'success' && (
               <div className="p-6 flex items-center justify-center h-full">
                 <motion.div
+                  key="success"
                   initial={{ scale: 0.8, opacity: 0 }}
                   animate={{ scale: 1, opacity: 1 }}
                   className="text-center"
@@ -468,7 +492,7 @@ export function CartPage({ isOpen, onClose }: CartPageProps) {
           </motion.div>
         </motion.div>
       )}
-      
+
       {/* PIX Payment Modal */}
       <PixPaymentModal
         isOpen={isPixModalOpen}

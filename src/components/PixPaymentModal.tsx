@@ -1,7 +1,9 @@
+// src/components/PixPaymentModal.tsx
 import { useState, useEffect } from 'react';
 import { motion } from 'motion/react';
 import { X, Copy, Check, Clock, Smartphone } from 'lucide-react';
 import { Button } from './ui/button';
+import { fetchPixStatus } from '../lib/payment'; // 👈 novo
 
 interface PixPaymentModalProps {
   isOpen: boolean;
@@ -19,7 +21,9 @@ interface PixPaymentModalProps {
 export function PixPaymentModal({ isOpen, onClose, paymentData, onPaymentConfirmed }: PixPaymentModalProps) {
   const [copied, setCopied] = useState(false);
   const [timeLeft, setTimeLeft] = useState<string>('');
+  const [status, setStatus] = useState<string>('pending'); // 👈 novo
 
+  // timer da contagem regressiva (já existia)
   useEffect(() => {
     if (!paymentData?.expires_at) return;
 
@@ -39,13 +43,43 @@ export function PixPaymentModal({ isOpen, onClose, paymentData, onPaymentConfirm
 
     updateTimer();
     const timer = setInterval(updateTimer, 1000);
-
     return () => clearInterval(timer);
   }, [paymentData?.expires_at]);
 
+  // 🔁 polling de status a cada 4s
+  useEffect(() => {
+    if (!isOpen || !paymentData?.payment_id) return;
+    let active = true;
+
+    const tick = async () => {
+      try {
+        const s = await fetchPixStatus(paymentData.payment_id);
+        if (!active) return;
+        if (s?.status) setStatus(s.status);
+
+        if (s?.status === 'paid') {
+          onPaymentConfirmed();
+        } else if (s?.status === 'expired' || s?.status === 'failed') {
+          // para de checar se expirou/falhou
+          clearInterval(interval);
+        }
+      } catch (e) {
+        // silencioso; tenta no próximo ciclo
+      }
+    };
+
+    const interval = setInterval(tick, 4000);
+    // primeira checada imediata
+    tick();
+
+    return () => {
+      active = false;
+      clearInterval(interval);
+    };
+  }, [isOpen, paymentData?.payment_id]);
+
   const copyPixCode = async () => {
     if (!paymentData?.pix_code) return;
-
     try {
       await navigator.clipboard.writeText(paymentData.pix_code);
       setCopied(true);
@@ -84,25 +118,30 @@ export function PixPaymentModal({ isOpen, onClose, paymentData, onPaymentConfirm
           </motion.button>
         </div>
 
-        {/* Timer */}
-        <div className="flex items-center justify-center mb-6 p-3 bg-sage-light/10 rounded-xl">
-          <Clock className="h-5 w-5 text-sage-medium mr-2" />
-          <span className="text-sage-dark font-medium">
-            Time remaining: {timeLeft}
+        {/* Timer + status */}
+        <div className="flex items-center justify-between mb-6 p-3 bg-sage-light/10 rounded-xl">
+          <div className="flex items-center">
+            <Clock className="h-5 w-5 text-sage-medium mr-2" />
+            <span className="text-sage-dark font-medium">Time remaining: {timeLeft}</span>
+          </div>
+          <span className="text-xs px-2 py-1 rounded bg-sage-light/30 text-sage-dark">
+            {status || 'pending'}
           </span>
         </div>
 
         {/* QR Code */}
         <div className="text-center mb-6">
           <div className="bg-white p-4 rounded-xl inline-block mb-4">
-            <img
-              src={paymentData.qr_code}
-              alt="PIX QR Code"
-              className="w-48 h-48 mx-auto"
-              onError={(e) => {
-                e.currentTarget.style.display = 'none';
-              }}
-            />
+            {paymentData.qr_code ? (
+              <img
+                src={paymentData.qr_code}
+                alt="PIX QR Code"
+                className="w-48 h-48 mx-auto"
+                onError={(e) => { e.currentTarget.style.display = 'none'; }}
+              />
+            ) : (
+              <p className="text-sm text-foreground/70">Loading QR…</p>
+            )}
           </div>
           <p className="text-sm text-foreground/70">
             Scan this QR code with your banking app to pay
