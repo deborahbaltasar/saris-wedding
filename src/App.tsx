@@ -10,10 +10,18 @@ import { Footer } from './components/Footer';
 import { CartProvider } from './components/CartContext';
 import { FloatingCartButton } from './components/FloatingCartButton';
 import { CartPage } from './components/CartPage';
+import { PixPaymentModal } from './components/PixPaymentModal';
+import { PaymentSuccessModal } from './components/PaymentSuccessModal';
+import { usePixPaymentPersistence } from './hooks/usePixPaymentPersistence';
 
 export default function App() {
   const [activeSection, setActiveSection] = useState('home');
   const [isCartOpen, setIsCartOpen] = useState(false);
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [successAmount, setSuccessAmount] = useState(0);
+  
+  // Hook para persistência do modal PIX
+  const { pixPaymentData, totalAmount, isPixModalOpen, closePixModal, openPixModal } = usePixPaymentPersistence();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -50,7 +58,34 @@ export default function App() {
         </main>
         <Footer />
         <FloatingCartButton onOpenCart={() => setIsCartOpen(true)} />
-        <CartPage isOpen={isCartOpen} onClose={() => setIsCartOpen(false)} />
+        <CartPage 
+          isOpen={isCartOpen} 
+          onClose={() => setIsCartOpen(false)} 
+          onOpenPixModal={openPixModal}
+        />
+        
+        {/* Modal PIX Global - Persiste após reload */}
+        <PixPaymentModal
+          isOpen={isPixModalOpen}
+          onClose={closePixModal}
+          paymentData={pixPaymentData}
+          onPaymentConfirmed={() => {
+            // Store success amount before closing
+            setSuccessAmount(totalAmount);
+            closePixModal();
+            // Close cart if it's open and show success modal
+            setIsCartOpen(false);
+            setShowSuccessModal(true);
+          }}
+          totalAmount={totalAmount}
+        />
+
+        {/* Modal de Sucesso do Pagamento */}
+        <PaymentSuccessModal
+          isOpen={showSuccessModal}
+          onClose={() => setShowSuccessModal(false)}
+          totalAmount={successAmount}
+        />
       </div>
     </CartProvider>
   );

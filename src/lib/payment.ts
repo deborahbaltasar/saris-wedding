@@ -65,3 +65,31 @@ export async function fetchPixStatus(id: string) {
   if (!r.ok) throw new Error(await r.text())
   return r.json() as Promise<{ id: string; status: string }>
 }
+
+// cancela pagamento PIX
+export async function cancelPixPayment(id: string) {
+  const r = await fetch('/api/payments/cancel', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ id })
+  })
+  
+  const data = await r.json()
+  
+  if (!r.ok) {
+    // Se não pode ser cancelado, retorna informação específica
+    if (r.status === 400 && data.cancellable === false) {
+      throw new Error(data.error || 'Transaction cannot be cancelled')
+    }
+    throw new Error(data.error || 'Failed to cancel payment')
+  }
+  
+  return data as { 
+    id: string; 
+    status: string; 
+    cancelled: boolean; 
+    message?: string;
+    error?: string;
+    cancellable?: boolean;
+  }
+}

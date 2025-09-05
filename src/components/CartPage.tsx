@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { X, Plus, Minus, Gift, CreditCard, Smartphone, ArrowLeft, Check, AlertCircle, ExternalLink } from 'lucide-react';
 import { Button } from './ui/button';
@@ -6,15 +6,23 @@ import { Input } from './ui/input';
 import { Label } from './ui/label';
 import { RadioGroup, RadioGroupItem } from './ui/radio-group';
 import { useCart } from './CartContext';
-import { PixPaymentModal } from './PixPaymentModal';
 import { createPixPayment, validatePaymentForm } from '../lib/payment';
+
+interface PixPaymentData {
+  payment_id: string;
+  pix_code: string;
+  qr_code: string;
+  qr_code_text: string;
+  expires_at: string;
+}
 
 interface CartPageProps {
   isOpen: boolean;
   onClose: () => void;
+  onOpenPixModal: (paymentData: PixPaymentData, amount: number) => void;
 }
 
-export function CartPage({ isOpen, onClose }: CartPageProps) {
+export function CartPage({ isOpen, onClose, onOpenPixModal }: CartPageProps) {
   const { selectedItems, addToCart, removeFromCart, clearCart, totalItems, totalPrice, giftItems } = useCart();
   const [currentView, setCurrentView] = useState<'cart' | 'payment' | 'success'>('cart');
   const [paymentMethod, setPaymentMethod] = useState('pix');
@@ -29,8 +37,6 @@ export function CartPage({ isOpen, onClose }: CartPageProps) {
     cardName: ''
   });
   const [isProcessing, setIsProcessing] = useState(false);
-  const [pixPaymentData, setPixPaymentData] = useState(null);
-  const [isPixModalOpen, setIsPixModalOpen] = useState(false);
   const [formErrors, setFormErrors] = useState({});
 
   const handleInputChange = (field: string, value: string) => {
@@ -75,8 +81,8 @@ export function CartPage({ isOpen, onClose }: CartPageProps) {
         },
       )
 
-      setPixPaymentData(pixData)
-      setIsPixModalOpen(true)
+      // Use global modal system
+      onOpenPixModal(pixData, totalPrice)
     } catch (error) {
       console.error('Payment error:', error)
       alert('Payment failed. Please try again.')
@@ -85,15 +91,6 @@ export function CartPage({ isOpen, onClose }: CartPageProps) {
     }
   };
 
-  const handlePixPaymentConfirmed = () => {
-    setIsPixModalOpen(false);
-    setCurrentView('success');
-    setTimeout(() => {
-      clearCart();
-      setCurrentView('cart');
-      onClose();
-    }, 5000);
-  };
 
   const cartItems = Object.entries(selectedItems).map(([itemId, quantity]) => {
     const item = giftItems.find(i => i.id === itemId);
@@ -457,49 +454,10 @@ export function CartPage({ isOpen, onClose }: CartPageProps) {
                 </div>
               </div>
             )}
-
-            {/* Success View */}
-            {currentView === 'success' && (
-              <div className="p-6 flex items-center justify-center h-full">
-                <motion.div
-                  key="success"
-                  initial={{ scale: 0.8, opacity: 0 }}
-                  animate={{ scale: 1, opacity: 1 }}
-                  className="text-center"
-                >
-                  <motion.div
-                    initial={{ scale: 0 }}
-                    animate={{ scale: 1 }}
-                    transition={{ delay: 0.2, type: 'spring' }}
-                    className="w-16 h-16 bg-sage-dark rounded-full flex items-center justify-center mx-auto mb-6"
-                  >
-                    <Check className="h-8 w-8 text-background" />
-                  </motion.div>
-                  <h2 className="font-romantic text-2xl text-sage-dark mb-4">Thank You!</h2>
-                  <p className="text-foreground/70 mb-6">
-                    Your gift purchase has been completed successfully. Sarah & Rommel will be so grateful for your generosity!
-                  </p>
-                  <motion.div
-                    initial={{ width: 0 }}
-                    animate={{ width: '100%' }}
-                    transition={{ duration: 5 }}
-                    className="h-1 bg-sage-dark rounded-full"
-                  />
-                  <p className="text-sm text-sage-medium mt-4">Redirecting...</p>
-                </motion.div>
-              </div>
-            )}
           </motion.div>
         </motion.div>
       )}
 
-      {/* PIX Payment Modal */}
-      <PixPaymentModal
-        isOpen={isPixModalOpen}
-        onClose={() => setIsPixModalOpen(false)}
-        paymentData={pixPaymentData}
-        onPaymentConfirmed={handlePixPaymentConfirmed}
-      />
     </AnimatePresence>
   );
 }
