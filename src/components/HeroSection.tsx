@@ -101,7 +101,7 @@ export function HeroSection() {
               className="mb-6"
             >
               <img
-                src="/src/assets/monograma.png"
+                src="/images/monograma.png"
                 alt="Wedding Monogram"
                 className="h-12 w-12 mx-auto mb-4 object-contain"
               />
