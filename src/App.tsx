@@ -53,7 +53,7 @@ export default function App() {
           <OurStorySection />
           <DetailsSection />
           <GallerySection />
-          <GiftRegistrySection />
+          <GiftRegistrySection onOpenCart={() => setIsCartOpen(true)} />
           <RSVPSection />
         </main>
         <Footer />

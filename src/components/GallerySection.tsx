@@ -89,7 +89,7 @@ export function GallerySection() {
           </h2>
           <div className="w-24 h-1 bg-sage-dark mx-auto mb-6 rounded-full"></div>
           <p className="text-lg text-foreground/70 max-w-2xl mx-auto">
-            A collection of our favorite moments together, from our engagement to wedding preparations.
+            Uma coleção dos nossos momentos favoritos juntos — do noivado aos preparativos do casamento, passando por nossas viagens, nossa família e tantas outras memórias especiais.
           </p>
         </motion.div>
 
@@ -212,7 +212,7 @@ export function GallerySection() {
 
                 {/* Image counter */}
                 <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 bg-background/80 backdrop-blur-sm rounded-full px-4 py-2 text-sage-dark">
-                  {selectedImage + 1} of {filteredImages.length}
+                  {selectedImage + 1} de {filteredImages.length}
                 </div>
               </motion.div>
             </motion.div>

@@ -412,7 +412,7 @@ export function PixPaymentModal({
           <div className="text-center">
             <h3 className="font-romantic text-2xl text-sage-dark mb-2">Pagamento PIX</h3>
             <div className="text-3xl font-bold text-sage-dark mb-2">
-              R$ {totalAmount.toFixed(2).replace('.', ',')}
+              {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(totalAmount)}
             </div>
             
             {/* Timer */}

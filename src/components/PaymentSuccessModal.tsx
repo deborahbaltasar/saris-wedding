@@ -67,7 +67,7 @@ export function PaymentSuccessModal({ isOpen, onClose, totalAmount }: PaymentSuc
                     </h3>
 
                     <div className="text-2xl font-bold text-green-600 mb-4">
-                        R$ {totalAmount.toFixed(2).replace('.', ',')}
+                        {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(totalAmount)}
                     </div>
 
                     <p className="text-foreground/80 mb-6 leading-relaxed">

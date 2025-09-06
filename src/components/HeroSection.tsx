@@ -103,7 +103,7 @@ export function HeroSection() {
               <img
                 src="/images/monograma.png"
                 alt="Wedding Monogram"
-                className="h-12 w-12 mx-auto mb-4 object-contain"
+                className="h-32 w-32 mx-auto mb-4 object-contain"
               />
             </motion.div>
 
@@ -122,7 +122,7 @@ export function HeroSection() {
               transition={{ duration: 0.8, delay: 0.4 }}
               className="text-xl sm:text-2xl text-foreground/70 mb-8 font-light"
             >
-              are getting married
+              um novo capítulo da nossa história
             </motion.p>
 
             <motion.div

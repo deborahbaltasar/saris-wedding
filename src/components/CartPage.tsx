@@ -166,7 +166,7 @@ export function CartPage({ isOpen, onClose, onOpenPixModal }: CartPageProps) {
                               <div className="flex-1">
                                 <h3 className="font-medium text-sage-dark">{item.name}</h3>
                                 <p className="text-sm text-foreground/70 mb-2">{item.store}</p>
-                                <p className="text-lg font-semibold text-sage-dark">R${item.price}</p>
+                                <p className="text-lg font-semibold text-sage-dark">{new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(item.price)}</p>
                               </div>
                               <div className="flex items-center space-x-2">
                                 <motion.button
@@ -200,7 +200,7 @@ export function CartPage({ isOpen, onClose, onOpenPixModal }: CartPageProps) {
                           <span className="text-lg font-medium text-sage-dark">
                             Total ({totalItems} {totalItems === 1 ? 'item' : 'items'})
                           </span>
-                          <span className="text-2xl font-semibold text-sage-dark">R${totalPrice}</span>
+                          <span className="text-2xl font-semibold text-sage-dark">{new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(totalPrice)}</span>
                         </div>
 
                         <div className="flex space-x-3">
@@ -266,7 +266,7 @@ export function CartPage({ isOpen, onClose, onOpenPixModal }: CartPageProps) {
                       })}
                       <div className="border-t border-sage-light pt-2 flex justify-between font-semibold">
                         <span>Total</span>
-                        <span>R${totalPrice}</span>
+                        <span>{new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(totalPrice)}</span>
                       </div>
                     </div>
                   </div>
@@ -443,12 +443,12 @@ export function CartPage({ isOpen, onClose, onOpenPixModal }: CartPageProps) {
                     {(paymentMethod === 'debit' || paymentMethod === 'credit') ? (
                       <>
                         <ExternalLink className="h-4 w-4 mr-2" />
-                        Continue to External Payment - ${totalPrice}
+                        Continue to External Payment - {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(totalPrice)}
                       </>
                     ) : isProcessing ? (
                       'Processing...'
                     ) : (
-                      `Complete PIX Payment - R$ ${totalPrice}`
+                      `Complete PIX Payment - ${new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(totalPrice)}`
                     )}
                   </Button>
                 </div>

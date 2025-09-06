@@ -53,7 +53,7 @@ export function OurStorySection() {
           </h2>
           <div className="w-24 h-1 bg-sage-dark mx-auto mb-6 rounded-full"></div>
           <p className="text-lg text-foreground/70 max-w-2xl mx-auto">
-            Every love story is beautiful, but ours is our favorite. Here are the moments that brought us together and the journey that led us to this special day.
+           Toda história de amor é linda, mas a nossa é a nossa favorita. Aqui estão os momentos que nos uniram e a jornada que nos trouxe até este dia especial.
           </p>
         </motion.div>
 
@@ -122,7 +122,7 @@ export function OurStorySection() {
         </div>
 
         {/* Call to action */}
-        <motion.div
+        {/* <motion.div
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8 }}
@@ -139,7 +139,7 @@ export function OurStorySection() {
               <Heart className="h-5 w-5 fill-current" />
             </div>
           </div>
-        </motion.div>
+        </motion.div> */}
       </div>
     </section>
   );
